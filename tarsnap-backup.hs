@@ -1,6 +1,4 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE PackageImports #-}
-
 {-
 
 (c) Andy Irving 2010
@@ -11,7 +9,7 @@ Basename-Frequency-YYYY-MM-DD
 where Frequency is Daily/Weekly/Monthly
 
 If cleanup is not disabled, archives of the next lower type will be deleted.
-So if the Frequency is Monthyl, any Daily archives for this Basename are
+So if the Frequency is Monthly, any Daily archives for this Basename are
 deleted.
 
 -}
@@ -21,7 +19,6 @@ import Data.Time.Clock
 import Data.Time.Calendar.OrdinalDate
 import Data.List
 import System.Process
-import "mtl" Control.Monad.Trans
 import System.Console.CmdArgs
 import System.FilePath
 import Data.Maybe
@@ -65,7 +62,7 @@ execCleanup l = do
 -- then strip the "Frequency-" string if it's the frequency we're clearing up
 -- then remove any Nothing's from the list
 getCleanupList :: String -> Frequency -> [String] -> [String]
-getCleanupList b f l = sort $ map ((b ++ "-" ++ show f ++ "-") ++) $ mapMaybe (stripPrefix (show f ++ "-")) $ mapMaybe (stripPrefix (b ++ "-")) l
+getCleanupList b f l = sort . map ((b ++ "-" ++ show f ++ "-") ++) $ mapMaybe (stripPrefix (show f ++ "-")) $ mapMaybe (stripPrefix (b ++ "-")) l
 
 -- using System.Console.CmdArgs on account of System.Console.GetOpt being
 -- not unlike stabbed repeatedly in the face
