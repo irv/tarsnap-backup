@@ -55,7 +55,8 @@ Executable tarsnap-backup
   
   -- Packages needed in order to build this package.
   Build-depends:      cmdargs >= 0.4, base >= 4 , filepath >= 1.1.0.3, process >=1.0.1.2, time >=1.1.4, mtl
-  
+  GHC-Options: -threaded
+
   -- Modules not exported by this package.
   -- Other-modules:       
   
