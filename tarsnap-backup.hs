@@ -44,15 +44,15 @@ data Frequency = Daily | Weekly | Monthly | Auto
 doBackup :: String -> Day -> FilePath -> IO ExitCode
 doBackup f d b = readProcessWithExitCode
                     "tarsnap" ["-c", "-f", archive_name b, b] [] >>= checkRes
-    where checkRes (rc, out, err) = case rc of
+    where checkRes (rc, _, err) = case rc of
                                             ExitFailure eno -> error $
                                                 "Unable to backup: (" ++ 
                                                 show eno ++ ")\n" ++ err
                                             ExitSuccess -> return rc
-          basename d =  last (splitDirectories d) -- /path/to/blah == blah
+          basename d' =  last (splitDirectories d') -- /path/to/blah == blah
            -- blah-Frequency-2010-09-11
-          archive_name b = concat $ 
-                            intersperse "-" [basename b, f, showGregorian d]
+          archive_name b' = concat $ 
+                            intersperse "-" [basename b', f, showGregorian d]
 
 -- When doing the cleanup, remove backups which are of the lower frequency
 whatCleanup :: Frequency -> Maybe Frequency
@@ -60,12 +60,13 @@ whatCleanup f = whatType f
     where whatType Daily = Nothing
           whatType Weekly = Just Daily
           whatType Monthly = Just Weekly
+          whatType _ = Nothing
 
 doCleanup :: String -> Frequency -> Int -> IO ExitCode
 doCleanup b f n = readProcessWithExitCode
                     "tarsnap" ["--list-archives"] [] >>= goCleanup
     where goCleanup (rc, out, err) = case rc of
-                                       ExitFailure eno -> error $
+                                       ExitFailure _ -> error $
                                          "Unable to list archives for cleanup"
                                            ++ "\n" ++ err
                                        ExitSuccess -> case 
@@ -76,10 +77,10 @@ doCleanup b f n = readProcessWithExitCode
 
 execCleanup :: [String] -> IO ExitCode
 execCleanup l = do
-    (rc, out, err) <- readProcessWithExitCode
+    (rc, _, err) <- readProcessWithExitCode
         "tarsnap" (["-d", "-f"] ++ intersperse "-f" l) []
     case rc of
-         ExitFailure eno ->  error err
+         ExitFailure _ ->  error err
          ExitSuccess -> return rc
 
 -- from the input list:
@@ -103,6 +104,7 @@ data TarsnapBackup = TarsnapBackup {
         }
     deriving (Show, Data, Typeable)
 
+tb :: TarsnapBackup
 tb = TarsnapBackup {
     frequency = Auto &= opt "Auto"
         &= help "Force a backup of type (Daily, Weekly, Monthly)",
@@ -123,7 +125,7 @@ main = do
     rc <- doBackup (show (whichType (frequency cmd) d)) d (dir cmd)
     let n = retain cmd
     case rc of
-         ExitFailure e -> exitWith rc
+         ExitFailure _ -> exitWith rc
          ExitSuccess -> if cl
                            then case cl_type of
                                     Nothing -> exitWith rc
