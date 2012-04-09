@@ -51,7 +51,7 @@ Cabal-version:       >=1.10
 tested-with: GHC == 7.4.1
 Executable tarsnap-backup
   -- .hs or .lhs file containing the Main module.
-  Main-is:            tarsnap-backup.hs
+  Main-is:            main.hs
   default-language: Haskell98
   -- Packages needed in order to build this package.
   Build-depends:      cmdargs >= 0.9, base >= 4 , filepath >= 1.3, process >=1.1, time >=1.4, mtl
@@ -63,3 +63,19 @@ Executable tarsnap-backup
   -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
   -- Build-tools:         
   
+test-suite tests
+  type: exitcode-stdio-1.0
+  main-is: test.hs
+
+  ghc-options:
+    -Wall -threaded -rtsopts
+
+  build-depends:
+    QuickCheck,
+    base,
+    filepath,
+    cmdargs,
+    process,
+    time,
+    test-framework,
+    test-framework-quickcheck2

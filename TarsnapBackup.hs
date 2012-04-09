@@ -27,9 +27,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --}
-module Main where
+module TarsnapBackup where
 import Data.Time.Calendar
-import Data.Time.Clock
 import Data.Time.Calendar.OrdinalDate
 import Data.List
 import System.Process
@@ -51,12 +50,11 @@ doBackup f d b = readProcessWithExitCode
                                             ExitSuccess -> return rc
           basename d' =  last (splitDirectories d') -- /path/to/blah == blah
            -- blah-Frequency-2010-09-11
-          archive_name b' = concat $ 
-                            intersperse "-" [basename b', f, showGregorian d]
+          archive_name b' = intercalate "-" [basename b', f, showGregorian d]
 
 -- When doing the cleanup, remove backups which are of the lower frequency
 whatCleanup :: Frequency -> Maybe Frequency
-whatCleanup f = whatType f
+whatCleanup = whatType
     where whatType Daily = Nothing
           whatType Weekly = Just Daily
           whatType Monthly = Just Weekly
@@ -70,7 +68,7 @@ doCleanup b f n = readProcessWithExitCode
                                          "Unable to list archives for cleanup"
                                            ++ "\n" ++ err
                                        ExitSuccess -> case 
-                                         (getCleanupList b f (lines out)) of
+                                         getCleanupList b f (lines out) of
                                            [] -> return rc
                                            (xs) -> execCleanup
                                                 (drop n (reverse xs))
@@ -115,26 +113,7 @@ tb = TarsnapBackup {
     help "This script manages Tarsnap backups" &=
     summary "(c) Andy Irving <andy@soundforsound.co.uk> 2010"
 
-main :: IO ExitCode
-main = do
-    cmd <- cmdArgsRun $ cmdArgsMode tb
-    time <- getCurrentTime
-    let d = utctDay time
-    let cl = cleanup cmd
-    let cl_type = whatCleanup (whichType (frequency cmd) d)
-    rc <- doBackup (show (whichType (frequency cmd) d)) d (dir cmd)
-    let n = retain cmd
-    case rc of
-         ExitFailure _ -> exitWith rc
-         ExitSuccess -> if cl
-                           then case cl_type of
-                                    Nothing -> exitWith rc
-                                    Just f -> doCleanup 
-                                                (last 
-                                                (splitDirectories (dir cmd))
-                                                ) 
-                                                f n >> exitWith rc
-                        else exitWith rc
+
 
 whichType :: Frequency -> Day -> Frequency
 whichType f d = check f
