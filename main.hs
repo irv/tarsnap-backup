@@ -3,7 +3,7 @@ module Main where
 import TarsnapBackup
 import System.Exit
 import System.Console.CmdArgs
-import Data.Time.Clock 
+import Data.Time.Clock
 import System.FilePath
 
 main :: IO ExitCode
