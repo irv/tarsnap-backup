@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable, OverloadedStrings #-}
 {--
 
 Copyright (c) 2010, Andy Irving
@@ -45,7 +45,7 @@ doBackup f d b = readProcessWithExitCode
                     "tarsnap" ["-c", "-f", archive_name b, b] [] >>= checkRes
     where checkRes (rc, _, err) = case rc of
                                             ExitFailure eno -> error $
-                                                "Unable to backup: (" ++ 
+                                                "Unable to backup: (" ++
                                                 show eno ++ ")\n" ++ err
                                             ExitSuccess -> return rc
           basename d' =  last (splitDirectories d') -- /path/to/blah == blah
@@ -67,7 +67,7 @@ doCleanup b f n = readProcessWithExitCode
                                        ExitFailure _ -> error $
                                          "Unable to list archives for cleanup"
                                            ++ "\n" ++ err
-                                       ExitSuccess -> case 
+                                       ExitSuccess -> case
                                          getCleanupList b f (lines out) of
                                            [] -> return rc
                                            (xs) -> execCleanup
@@ -90,7 +90,7 @@ getCleanupList :: String -> Frequency -> [String] -> [String]
 getCleanupList b f l = sort . map ((b ++ "-" ++ show f ++ "-") ++) $
     mapMaybe (stripPrefix (show f ++ "-")) $
     mapMaybe (stripPrefix (b ++ "-")) l
-  
+
 
 -- using System.Console.CmdArgs on account of System.Console.GetOpt being
 -- not unlike stabbed repeatedly in the face
