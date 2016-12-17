@@ -13,7 +13,7 @@ Version:             0.1
 Synopsis:            Haskell program for automating and managing tarsnap backups
 
 -- A longer description of the package.
--- Description:         
+-- Description:
 
 -- URL for the project homepage or repository.
 Homepage:            http://github.com/irv/tarsnap-backup
@@ -29,10 +29,10 @@ Author:              Andy Irving
 
 -- An email address to which users can send suggestions, bug reports,
 -- and patches.
-Maintainer:          andy@soundforsound.co.uk
+Maintainer:          irv@soundforsound.co.uk
 
 -- A copyright notice.
--- Copyright:           
+-- Copyright:
 
 -- Stability of the pakcage (experimental, provisional, stable...)
 Stability:           Experimental
@@ -43,12 +43,12 @@ Build-type:          Simple
 
 -- Extra files to be distributed with the package, such as examples or
 -- a README.
--- Extra-source-files:  
+-- Extra-source-files:
 
 -- Constraint on the version of Cabal needed to build this package.
 Cabal-version:       >=1.10
 
-tested-with: GHC == 7.4.1
+tested-with: GHC == 8.0.1
 Executable tarsnap-backup
   -- .hs or .lhs file containing the Main module.
   Main-is:            main.hs
@@ -58,11 +58,11 @@ Executable tarsnap-backup
   GHC-Options: -threaded -Wall
 
   -- Modules not exported by this package.
-  -- Other-modules:       
-  
+  -- Other-modules:
+
   -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
-  -- Build-tools:         
-  
+  -- Build-tools:
+
 test-suite tests
   type: exitcode-stdio-1.0
   main-is: test.hs
