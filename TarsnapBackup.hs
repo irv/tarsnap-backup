@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, OverloadedStrings #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 {--
 
@@ -78,7 +78,7 @@ doCleanup b f n = readProcessWithExitCode "tarsnap" ["--list-archives"] [] >>= g
         ExitSuccess ->
           case getCleanupList b f (lines out) of
             [] -> return rc
-            (xs) -> execCleanup (drop n (reverse xs))
+            xs -> execCleanup (drop n (reverse xs))
 
 execCleanup :: [String] -> IO ExitCode
 execCleanup l = do
@@ -112,12 +112,12 @@ tb =
   TarsnapBackup
   { frequency =
     Auto &= opt "Auto" &= help "Force a backup of type (Daily, Weekly, Monthly)"
-  , cleanup = True &= help "Cleanup old backups"
-  , retain = 0 &= help "Number of backups to retain"
+  , cleanup = True &= help "Cleanup old backups, including this and lower Frequencies"
+  , retain = 0 &= help "Number of backups to retain of the requested Frequency"
   , dir = "" &= args &= typDir
   } &=
   help "This script manages Tarsnap backups" &=
-  summary "(c) Andy Irving <andy@soundforsound.co.uk> 2010"
+  summary "(c) Andy Irving <irv@soundforsound.co.uk> 2010-2016"
 
 whichType :: Frequency -> Day -> Frequency
 whichType f d = check f

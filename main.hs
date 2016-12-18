@@ -12,8 +12,9 @@ main = do
   time <- getCurrentTime
   let d = utctDay time
   let cl = cleanup cmd
-  let cl_type = whatCleanup (whichType (frequency cmd) d)
-  rc <- doBackup (show (whichType (frequency cmd) d)) d (dir cmd)
+  let fr = whichType (frequency cmd) d
+  let cl_type = whatCleanup fr
+  rc <- doBackup (show fr) d (dir cmd)
   let n = retain cmd
   case rc of
     ExitFailure _ -> exitWith rc
