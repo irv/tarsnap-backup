@@ -5,7 +5,7 @@ language: generic
 addons:
   apt:
     packages:
-- libgmp-dev
+    - libgmp-dev
 
   # Caching so the next build will be fast too.
 cache:
