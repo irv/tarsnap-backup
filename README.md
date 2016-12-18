@@ -11,22 +11,25 @@ force a backup of a specific type and/or disable the clean up.
 
 The archives will be created in the following format:
 
-Basename-Frequency-YYYY-MM-DD
+```Basename-Frequency-YYYY-MM-DD```
 
 So, if i was backing up my Mail directory daily:
 
-Mail-Daily-2010-09-18
+```Mail-Daily-2010-09-18```
 
 Or the file world_domination.txt weekly:
 
-world_domination-Weekly-2010-09-19
+```world_domination-Weekly-2010-09-19```
 
-Requirements:
-tarsnap
-a tarsnap.rc (system or user level for the user executing it)
-GHC 6.12
+## Requirements
 
-cabal should sort out any dependencies from hackage.
+- tarsnap
+- a tarsnap.rc (system or user level for the user executing it)
+- GHC 8
+
+## Installation
+
+Now uses stack, but you can still use cabal
 
 ## Error Codes
 
@@ -38,7 +41,7 @@ system level (on my Debian system), but when running my user's crontab, it
 doesn't appear to be. My suggestion is to install tarsnap into /usr not
 /usr/local.
 
-# Cron Examples
+## Cron Examples
 
 Note: these examples pipe the output to logger so errors show up in syslog or
 however you have your system configured (I don't run a local MTA on my desktop
@@ -46,8 +49,7 @@ machine, for example, so cron can't email about failures)
 
 To automatically back things up, at 4AM every day:
 
-0 04 * * * /usr/bin/tarsnap-backup /home/irv/Mail 2>&1 |/usr/bin/logger -t
-tarsnap-backup
+```0 04 * * * /usr/bin/tarsnap-backup /home/irv/Mail 2>&1 |/usr/bin/logger -t tarsnap-backup```
 
 This will backup my Mail directory every day at 4AM, producing 6 daily backups,
 then on a Sunday a weekly backup and remove the daily ones. Then on the 1st of
@@ -55,8 +57,7 @@ the month, a monthly backup, deleting all the weekly backups.
 
 If you just want to force a type of backup?
 
-* * * * 0 /usr/bin/tarsnap-backup -f=Weekly /home/irv/Documents 2>&1
-|/usr/bin/logger -t tarsnap-backup
+```* * * * 0 /usr/bin/tarsnap-backup -f=Weekly /home/irv/Documents 2>&1 |/usr/bin/logger -t tarsnap-backup```
 
 Once a week, backup my documents folder. You might want to disable  clean up if
 you only ever run a weekly (or monthly) backup; this will save you a tiny amount
