@@ -1,4 +1,6 @@
-tarsnap-backup
+# tarsnap-backup
+
+[![Build Status](https://travis-ci.org/irv/tarsnap-backup.svg?branch=master)](https://travis-ci.org/irv/tarsnap-backup)
 
 This application manages tarsnap backups, and is expected to be run via cron,
 although doesn't have to be. In its default mode, it should take 6 daily backups
@@ -26,7 +28,7 @@ GHC 6.12
 
 cabal should sort out any dependencies from hackage.
 
-Error Codes
+## Error Codes
 
 The Error Code should be passed through from tarsnap, along with any error text.
 Handy tip: code 127 means the tarsnap executable can't be found in the $PATH. On
@@ -36,7 +38,7 @@ system level (on my Debian system), but when running my user's crontab, it
 doesn't appear to be. My suggestion is to install tarsnap into /usr not
 /usr/local.
 
-Cron Examples
+# Cron Examples
 
 Note: these examples pipe the output to logger so errors show up in syslog or
 however you have your system configured (I don't run a local MTA on my desktop
