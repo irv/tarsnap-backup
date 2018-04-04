@@ -10,12 +10,12 @@ main :: IO ExitCode
 main = do
   cmd <- cmdArgsRun $ cmdArgsMode tb
   time <- getCurrentTime
-  let d = utctDay time
-  let cl = cleanup cmd
-  let fr = whichType (frequency cmd) d
-  let cl_type = whatCleanup fr
-  rc <- doBackup (show fr) d (dir cmd)
-  let n = retain cmd
+  let day = utctDay time
+      cl = cleanup cmd
+      fr = autoFrequency (frequency cmd) day
+      cl_type = whatCleanup fr
+      n = retain cmd
+  rc <- doBackup fr (dryrun cmd) (verbose cmd) (exclude cmd) day (dir cmd)
   case rc of
     ExitFailure _ -> exitWith rc
     ExitSuccess ->
@@ -23,5 +23,5 @@ main = do
         then case cl_type of
                Nothing -> exitWith rc
                Just f ->
-                 doCleanup (last (splitDirectories (dir cmd))) f n >> exitWith rc
+                 doCleanup f (dryrun cmd) (verbose cmd) (last (splitDirectories (dir cmd))) n >> exitWith rc
         else exitWith rc
