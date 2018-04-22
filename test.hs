@@ -35,7 +35,7 @@ instance Arbitrary Day where
     return $ fromGregorian year month day
 
 prop_correct_auto_frequency :: Frequency -> Day -> Bool
-prop_correct_auto_frequency f d = whichType f d == f
+prop_correct_auto_frequency f d = autoFrequency f d == f
 
 genFiles :: Gen String
 genFiles =

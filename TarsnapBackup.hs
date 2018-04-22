@@ -46,18 +46,26 @@ data Frequency
   | Auto
   deriving (Read, Show, Eq, Data, Typeable)
 
-doBackup :: String -> Day -> FilePath -> IO ExitCode
-doBackup f d b =
-  readProcessWithExitCode "tarsnap" ["-c", "-f", archive_name b, b] [] >>= checkRes
+doBackup :: Frequency -> Bool -> Bool -> [String] -> Day -> FilePath -> IO ExitCode
+doBackup f dry v excl d b =
+  readProcessWithExitCode "tarsnap"
+                        (dryRun
+                         ++ verboseRun
+                         ++ excludePatterns
+                         ++ ["--print-stats", "-c", "-f", archive_name b, b])
+                        [] >>= checkRes
   where
+    dryRun = ["--dry-run" | dry]
+    verboseRun = ["--verbose" | v]
     checkRes (rc, _, err) =
       case rc of
         ExitFailure eno ->
           error $ "Unable to backup: (" ++ show eno ++ ")\n" ++ err
-        ExitSuccess -> return rc
+        ExitSuccess -> putStrLn err >> return rc
+    excludePatterns = concatMap (\p -> ["--exclude", p]) excl
     basename d' = last (splitDirectories d') -- /path/to/blah == blah
     -- blah-Frequency-2010-09-11
-    archive_name b' = intercalate "-" [basename b', f, showGregorian d]
+    archive_name b' = intercalate "-" [basename b', show f, showGregorian d]
 
 -- When doing the cleanup, remove backups which are of the lower frequency
 whatCleanup :: Frequency -> Maybe Frequency
@@ -68,8 +76,8 @@ whatCleanup = whatType
     whatType Monthly = Just Weekly
     whatType _ = Nothing
 
-doCleanup :: String -> Frequency -> Int -> IO ExitCode
-doCleanup b f n = readProcessWithExitCode "tarsnap" ["--list-archives"] [] >>= goCleanup
+doCleanup :: Frequency -> Bool -> Bool -> String -> Int -> IO ExitCode
+doCleanup f dry v b n = readProcessWithExitCode "tarsnap" ["--list-archives"] [] >>= goCleanup
   where
     goCleanup (rc, out, err) =
       case rc of
@@ -78,15 +86,19 @@ doCleanup b f n = readProcessWithExitCode "tarsnap" ["--list-archives"] [] >>= g
         ExitSuccess ->
           case getCleanupList b f (lines out) of
             [] -> return rc
-            xs -> execCleanup (drop n (reverse xs))
+            xs -> execCleanup dry v (drop n (reverse xs))
 
-execCleanup :: [String] -> IO ExitCode
-execCleanup l = do
+execCleanup :: Bool -> Bool -> [String] -> IO ExitCode
+execCleanup dry v l = do
   (rc, _, err) <-
-    readProcessWithExitCode "tarsnap" (["-d", "-f"] ++ intersperse "-f" l) []
+    readProcessWithExitCode "tarsnap" (dryRun ++ verboseRun ++ ["-d", "-f"] ++ intersperse "-f" l) []
   case rc of
     ExitFailure _ -> error err
-    ExitSuccess -> return rc
+    ExitSuccess -> putStrLn err >> return rc
+  where
+    dryRun = ["--dry-run" | dry]
+    verboseRun = ["--verbose" | v]
+
 
 -- from the input list:
 -- ["blah-Frequency-2010-09-11", "blah-Frequency-2010-09-12"]
@@ -102,6 +114,9 @@ getCleanupList b f l =
 -- not unlike stabbed repeatedly in the face
 data TarsnapBackup = TarsnapBackup
   { frequency :: Frequency
+  , exclude :: [String]
+  , verbose :: Bool
+  , dryrun :: Bool
   , dir :: FilePath
   , cleanup :: Bool
   , retain :: Int
@@ -110,17 +125,19 @@ data TarsnapBackup = TarsnapBackup
 tb :: TarsnapBackup
 tb =
   TarsnapBackup
-  { frequency =
-    Auto &= opt "Auto" &= help "Force a backup of type (Daily, Weekly, Monthly)"
+  { frequency = Auto &= opt "Auto" &= help "Force a backup of type (Daily, Weekly, Monthly)"
+  , exclude = [] &= typ "PATTERN" &= help "Patterns to exclude"
   , cleanup = True &= help "Cleanup old backups, including this and lower Frequencies"
+  , verbose = False &= help "Increase verbosity"
+  , dryrun = False &= help "Don't actually do anything. Useful together with the verbose option"
   , retain = 0 &= help "Number of backups to retain of the requested Frequency"
   , dir = "" &= args &= typDir
   } &=
   help "This script manages Tarsnap backups" &=
   summary "(c) Andy Irving <irv@soundforsound.co.uk> 2010-2016"
 
-whichType :: Frequency -> Day -> Frequency
-whichType f d = check f
+autoFrequency :: Frequency -> Day -> Frequency
+autoFrequency f d = check f
   where
     check Auto
       | month_day == 1 = Monthly -- first day of the month
